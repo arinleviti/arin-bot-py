@@ -23,8 +23,11 @@ def retrieve_context(question, n_results=3):
     )
     return results["documents"][0]
 
+# None makes the parameter optional. in TS we use ? to make a parameter optional, but in Python we use None as the default value. If the caller doesn't provide a value for history, it will be None.
+def answer_question(question, history=None):
 
-def answer_question(question):
+    if history is None:
+        history = []
     context_chunks = retrieve_context(question)
     context_text = "\n\n".join(context_chunks)
 
@@ -35,12 +38,15 @@ def answer_question(question):
         f"Context:\n{context_text}"
     )
 
+    messages = [{"role": "system", "content": system_prompt}]
+    # extend() adds all elements of the history list to the messages list, preserving their order.
+    messages.extend(history)
+    # append() adds a single new element to the end of the messages list.
+    messages.append({"role": "user", "content": question})
+
     response = groq_client.chat.completions.create(
         model="llama-3.3-70b-versatile",
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": question},
-        ],
+        messages=messages,
     )
     return response.choices[0].message.content
 

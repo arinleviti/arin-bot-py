@@ -12,8 +12,12 @@ from app.rag.answer import answer_question
 #creates the application object. Direct equivalent of const app = express().
 app= FastAPI()
 
+# Simple in-memory store: sessionId -> list of past messages
+conversations = {}
+
 class ChatRequest(BaseModel):
     message: str
+    sessionId: str
 
 #The @ symbol placed directly above a function is Python's way of "wrapping" that function with extra behavior 
 #conceptually it's doing the same job as:  app.get('/', (req, res) => { ... });
@@ -24,7 +28,15 @@ def health_check():
 
 @app.post("/chat")
 def chat(request: ChatRequest):
-    answer_text = answer_question(request.message)
+
+    history = conversations.get(request.sessionId, [])
+
+    answer_text = answer_question(request.message, history)
+
+    history.append({"role": "user", "content": request.message})
+    history.append({"role": "assistant", "content": answer_text})
+    conversations[request.sessionId] = history
+
     return {
         "text": answer_text,
         "buttons": []
