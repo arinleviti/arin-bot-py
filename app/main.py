@@ -6,12 +6,22 @@ from app.schemas import Message, ChatRequest
 
 #fastapi is like Express in that it provides a framework for defining routes and handling HTTP requests, but it also has built-in support for data validation, serialization, and automatic API documentation generation. FastAPI is designed to be fast and efficient, leveraging Python's type hints to provide better developer experience and performance.
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 # BaseMOdel is a class from the Pydantic library, equivalent of a TS interface, except it also validates incoming data at runtime.
 #this Pydantic version actually checks at runtime that incoming JSON has a message field that's genuinely a string
 from app.rag.answer import answer_question
 from typing import Dict, List
 #creates the application object. Direct equivalent of const app = express().
 app= FastAPI()
+
+# Allow requests from the Angular dev server on port 4200.
+# Same role as app.use(cors()) in Express.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:4200"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Simple in-memory store: sessionId -> list of past messages
 # {} means an empty dictionary, which is Python's built-in key-value store. In TypeScript, you'd use an object literal: const conversations: Record<string, any[]> = {};
