@@ -1,4 +1,6 @@
+from app.schemas import Message
 import os
+from typing import List
 import chromadb
 from dotenv import load_dotenv
 from groq import Groq
@@ -24,7 +26,7 @@ def retrieve_context(question, n_results=3):
     return results["documents"][0]
 
 # None makes the parameter optional. in TS we use ? to make a parameter optional, but in Python we use None as the default value. If the caller doesn't provide a value for history, it will be None.
-def answer_question(question, history=None):
+def answer_question(question: str, history: List[Message] = None) -> str:
 
     if history is None:
         history = []
@@ -38,10 +40,21 @@ def answer_question(question, history=None):
         f"Context:\n{context_text}"
     )
 
-    messages = [{"role": "system", "content": system_prompt}]
-    # extend() adds all elements of the history list to the messages list, preserving their order.
-    messages.extend(history)
-    # append() adds a single new element to the end of the messages list.
+    # Create the system message as a Message instance — Pydantic validates it on creation
+    system_message = Message(role="system", content=system_prompt)
+
+    # Start the messages list with the system prompt.
+    # .model_dump() converts the Message instance into a plain object that Groq understands
+    messages = [system_message.model_dump()]
+
+    # Add all previous conversation turns to the messages list.
+    # .model_dump() converts each Message instance into a plain object for Groq.
+    # extend() adds each item individually, oldest message first
+    messages.extend([m.model_dump() for m in history])
+
+    # Finally, append the brand new question from the user as the last item.
+    # This is a plain dict directly — no Message object needed here since
+    # it's the current turn, not something we're storing or validating elsewhere.
     messages.append({"role": "user", "content": question})
 
     response = groq_client.chat.completions.create(
