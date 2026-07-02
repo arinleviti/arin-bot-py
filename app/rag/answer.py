@@ -4,32 +4,34 @@ from typing import List
 import chromadb
 from dotenv import load_dotenv
 from groq import Groq
-from sentence_transformers import SentenceTransformer
 
 load_dotenv()
 
-# --- Retrieval setup (same as retrieve.py) ---
+# --- Retrieval setup ---
+# PersistentClient connects to the existing database built by ingest.py
 client = chromadb.PersistentClient(path="data/chroma_db")
 collection = client.get_collection(name="arin_knowledge")
-embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 
 # --- Generation setup ---
 groq_client = Groq(api_key=os.environ["GROQ_API_KEY"])
 
 
 def retrieve_context(question, n_results=3):
-    query_embedding = embedding_model.encode(question).tolist()
+    # Pass query_texts instead of query_embeddings — Chroma handles the embedding
+    # internally using its built-in model, so we don't need sentence-transformers at all
     results = collection.query(
-        query_embeddings=[query_embedding],
+        query_texts=[question],
         n_results=n_results,
     )
     return results["documents"][0]
+
 
 # None makes the parameter optional. in TS we use ? to make a parameter optional, but in Python we use None as the default value. If the caller doesn't provide a value for history, it will be None.
 def answer_question(question: str, history: List[Message] = None) -> str:
 
     if history is None:
         history = []
+
     context_chunks = retrieve_context(question)
     context_text = "\n\n".join(context_chunks)
 
@@ -53,7 +55,7 @@ def answer_question(question: str, history: List[Message] = None) -> str:
     messages.extend([m.model_dump() for m in history])
 
     # Finally, append the brand new question from the user as the last item.
-    # This is a plain dict directly — no Message object needed here since
+    # This is a plain object directly — no Message instance needed here since
     # it's the current turn, not something we're storing or validating elsewhere.
     messages.append({"role": "user", "content": question})
 

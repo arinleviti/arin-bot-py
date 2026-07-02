@@ -1,6 +1,5 @@
 #imports Python's built-in tool for working with file paths. The TS equivalent of an import statement
 from pathlib import Path
-from sentence_transformers import SentenceTransformer
 import chromadb
 
 KNOWLEDGE_DIR = Path("data/knowledge")
@@ -22,7 +21,6 @@ for file_path in KNOWLEDGE_DIR.glob("*.md"):
     title = sections[0].lstrip("#").strip()  
     body_sections = sections[1:]  # The rest are body sections
 
-    # repr returns a raw representation of a string, including escape characters. This is useful for debugging and understanding the exact content of a string, especially when it contains special characters or whitespace.
     for section in body_sections:
         #strip also removes \n and \r characters from the beginning and end of the string, which is useful for cleaning up text data.
         heading, _, content = section.strip().partition("\n")  # Split the section into heading and content at the first newline
@@ -35,36 +33,32 @@ for file_path in KNOWLEDGE_DIR.glob("*.md"):
             "source": file_path.name,
             "heading": heading,
         })
+
 print(f"Total chunks created: {len(chunks)}")  # Print the total number of chunks created
-# Load the pre-trained model for generating embeddings
-model = SentenceTransformer("all-MiniLM-L6-v2")  
 
 # Get the text from every chunk, as a plain list of strings. [EXPRESSION for ITEM in LIST]
-# Equivalent to the TypeScript syintax: chunks.map(chunk => chunk.text)
+# Equivalent to the TypeScript syntax: chunks.map(chunk => chunk.text)
 chunk_texts = [chunk["text"] for chunk in chunks]
 
-# Embed all of them in one call
-embeddings = model.encode(chunk_texts)
-
-print(f"Number of embeddings: {len(embeddings)}")
-print(f"Each embedding has {len(embeddings[0])} numbers")
-
- # PersistentClient both CONNECTS to and CREATES the database, depending on whether
+# PersistentClient both CONNECTS to and CREATES the database, depending on whether
 # data/chroma_db already exists. No separate "create database" step needed —
 # unlike Postgres, there's no server running beforehand; this one line does both jobs.
 # Think of it like SQLite: pointing at a .db file that doesn't exist yet just creates it.
-client  = chromadb.PersistentClient(path="data/chroma_db") 
+client = chromadb.PersistentClient(path="data/chroma_db") 
 
 # get_or_create_collection is the equivalent of CREATE TABLE IF NOT EXISTS —
 # safe to run every time, won't duplicate or error if "arin_knowledge" already exists.
 # A collection = a table: one database (chroma_db) can hold multiple collections.
-collection =client.get_or_create_collection(name="arin_knowledge")  
+collection = client.get_or_create_collection(name="arin_knowledge")  
 
+# Chroma's built-in embedding function handles converting text to vectors internally.
+# We pass query_texts instead of query_embeddings — no manual embedding step needed.
+# This removes the need for sentence-transformers and torch entirely, keeping the
+# Docker image small enough to deploy comfortably.
 collection.add(
     # range is the TS equivalent to Array.from({length: len(chunks)}, (_, i) => i.toString())
     ids=[str(i) for i in range(len(chunks))],  # Unique IDs for each chunk
-    embeddings=embeddings.tolist(),  # Convert embeddings to a list of lists
-    documents=chunk_texts,  # The actual text of each chunk
+    documents=chunk_texts,  # The actual text of each chunk — Chroma embeds these automatically
     metadatas=[{"source": chunk["source"], "heading": chunk["heading"]} for chunk in chunks]  # Metadata for each chunk, including source file and heading
 )
 

@@ -1,4 +1,15 @@
-#uvicorn app.main:app --reload 
+# --- DEV ---
+# uvicorn app.main:app --reload
+
+# --- DEPLOYMENT (run these in order from arin-bot-py root) ---
+# 1. docker build -t arin-bot-py .
+# 2. docker tag arin-bot-py europe-west3-docker.pkg.dev/vivid-grove-470307-f4/arin-bot-py/arin-bot-py:latest
+# 3. docker push europe-west3-docker.pkg.dev/vivid-grove-470307-f4/arin-bot-py/arin-bot-py:latest
+# 4. gcloud run deploy arin-bot-py --image europe-west3-docker.pkg.dev/vivid-grove-470307-f4/arin-bot-py/arin-bot-py:latest --platform managed --region europe-west3 --allow-unauthenticated --max-instances 2
+
+# --- KNOWLEDGE BASE UPDATE (run this locally after editing data/knowledge/*.md) ---
+# python app/rag/ingest.py
+# then redeploy using steps 1-4 above so the new ChromaDB gets baked into the container
 
 from app.schemas import Message, ChatRequest
  
@@ -18,7 +29,7 @@ app= FastAPI()
 # Same role as app.use(cors()) in Express.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200"],
+    allow_origins=["http://localhost:4200","https://gleeful-trifle-936b5b.netlify.app"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
