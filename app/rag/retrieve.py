@@ -1,3 +1,5 @@
+#to run this file python app/rag/retrieve.py
+
 import chromadb
 from sentence_transformers import SentenceTransformer
 
@@ -8,7 +10,7 @@ collection = client.get_collection(name="arin_knowledge")
 
 model = SentenceTransformer("all-MiniLM-L6-v2")  # Load the pre-trained model for generating embeddings
 
-query = "what does arin do in his spare time?"
+query = "what is Arin's experience with Angular?"
 query_embedding = model.encode(query).tolist()
 
 results = collection.query(
