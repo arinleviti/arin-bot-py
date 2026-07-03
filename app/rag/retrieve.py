@@ -8,13 +8,13 @@ collection = client.get_collection(name="arin_knowledge")
 
 model = SentenceTransformer("all-MiniLM-L6-v2")  # Load the pre-trained model for generating embeddings
 
-query = "What AI agent work has Arin done?"
+query = "what does arin do in his spare time?"
 query_embedding = model.encode(query).tolist()
 
 results = collection.query(
     # creates a list with only one element, the query embedding, since we only have one query
     query_embeddings=[query_embedding],
-    n_results=3
+    n_results=5
 )  # Generate an embedding for the query
 
 documents  =results['documents'][0]  # Get the documents from the results

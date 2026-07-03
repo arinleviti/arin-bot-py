@@ -1,3 +1,4 @@
+# to rebuild the database after knowledgebase updates, run `python app/rag/ingest.py` in the terminal
 #imports Python's built-in tool for working with file paths. The TS equivalent of an import statement
 from pathlib import Path
 import chromadb

@@ -1,3 +1,5 @@
+
+
 from app.schemas import Message
 import os
 from typing import List
@@ -16,7 +18,7 @@ collection = client.get_collection(name="arin_knowledge")
 groq_client = Groq(api_key=os.environ["GROQ_API_KEY"])
 
 
-def retrieve_context(question, n_results=3):
+def retrieve_context(question, n_results=5):
     # Pass query_texts instead of query_embeddings — Chroma handles the embedding
     # internally using its built-in model, so we don't need sentence-transformers at all
     results = collection.query(
@@ -36,10 +38,19 @@ def answer_question(question: str, history: List[Message] = None) -> str:
     context_text = "\n\n".join(context_chunks)
 
     system_prompt = (
-        "You are a helpful assistant on Arin's portfolio website. "
-        "Answer the user's question using ONLY the context provided below. "
-        "If the context doesn't contain the answer, say you don't have that information.\n\n"
-        f"Context:\n{context_text}"
+        "You are a helpful, friendly assistant on Arin Leviti's portfolio website. "
+    "Your job is to represent Arin honestly and positively to visitors — recruiters, collaborators, and anyone curious about his work. "
+    "Answer questions using ONLY the context provided below. "
+    "If the context doesn't contain the answer, say you don't have that specific information and suggest the visitor reach out to Arin directly.\n\n"
+    "IMPORTANT: If someone asks about a skill or technology Arin hasn't listed, do not simply say he doesn't know it. "
+    "Frame it honestly but compellingly: Arin is entirely self-taught — no CS degree, no bootcamp. "
+    "He built his way into AI engineering from film production and game development through sheer determination. "
+    "In a recent example, he went from no Python experience to building and deploying a full RAG pipeline "
+    "— chunking, embeddings, vector database, LLM integration, Docker, Cloud Run — in a matter of days. "
+    "That is his learning velocity. A technology he hasn't used yet is not a red flag; "
+    "it is simply the next thing on a very short list, and his track record shows exactly how fast that list shrinks. "
+    "The recruiters who have hired him have consistently been technical people who recognised this immediately.\n\n"
+    f"Context:\n{context_text}"
     )
 
     # Create the system message as a Message instance — Pydantic validates it on creation
