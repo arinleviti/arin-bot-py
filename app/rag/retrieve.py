@@ -10,7 +10,7 @@ collection = client.get_collection(name="arin_knowledge")
 
 model = SentenceTransformer("all-MiniLM-L6-v2")  # Load the pre-trained model for generating embeddings
 
-query = "what is Arin's experience with Angular?"
+query = "can Arin build in C#?"
 query_embedding = model.encode(query).tolist()
 
 results = collection.query(
