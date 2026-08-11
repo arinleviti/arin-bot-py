@@ -49,6 +49,8 @@ def health_check():
 def chat(request: ChatRequest):
     #TS equivalent would be:
     #const history = conversations[request.sessionId] || [];
+    # get is a safe lookup. If the sessionId doesn't exist in conversations, it returns the default value (an empty list) instead of throwing an error. This is similar to using the nullish coalescing operator (??) in TypeScript.
+    # get only works with dictionaries.
     history: List[Message] = conversations.get(request.sessionId, [])
 
     answer_text = answer_question(request.message, history)
