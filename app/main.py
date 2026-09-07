@@ -2,10 +2,8 @@
 # uvicorn app.main:app --reload
 
 # --- DEPLOYMENT (run these in order from arin-bot-py root) ---
-# 1. docker build -t arin-bot-py .
-# 2. docker tag arin-bot-py europe-west3-docker.pkg.dev/vivid-grove-470307-f4/arin-bot-py/arin-bot-py:latest
-# 3. docker push europe-west3-docker.pkg.dev/vivid-grove-470307-f4/arin-bot-py/arin-bot-py:latest
-# 4. gcloud run deploy arin-bot-py --image europe-west3-docker.pkg.dev/vivid-grove-470307-f4/arin-bot-py/arin-bot-py:latest --platform managed --region europe-west3 --allow-unauthenticated --max-instances 2
+# 1. gcloud builds submit --tag europe-west3-docker.pkg.dev/vivid-grove-470307-f4/arin-bot-py/arin-bot-py:latest
+# 2. gcloud run deploy arin-bot-py --image europe-west3-docker.pkg.dev/vivid-grove-470307-f4/arin-bot-py/arin-bot-py:latest --platform managed --region europe-west3 --allow-unauthenticated --max-instances 2
 
 # --- KNOWLEDGE BASE UPDATE (run this locally after editing data/knowledge/*.md) ---
 # python app/rag/ingest.py
