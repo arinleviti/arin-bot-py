@@ -20,6 +20,7 @@ from fastapi.middleware.cors import CORSMiddleware
 #this Pydantic version actually checks at runtime that incoming JSON has a message field that's genuinely a string
 from app.rag.answer import question_main_logic
 from typing import Dict, List
+from app.rag.rate_limit import check_rate_limit
 #creates the application object. Direct equivalent of const app = express().
 app= FastAPI()
 
@@ -45,6 +46,7 @@ def health_check():
 
 @app.post("/chat")
 def chat(request: ChatRequest):
+    check_rate_limit(request.sessionId) 
     #TS equivalent would be:
     #const history = conversations[request.sessionId] || [];
     # get is a safe lookup. If the sessionId doesn't exist in conversations, it returns the default value (an empty list) instead of throwing an error. This is similar to using the nullish coalescing operator (??) in TypeScript.

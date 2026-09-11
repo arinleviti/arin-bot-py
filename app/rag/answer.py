@@ -121,6 +121,7 @@ def answer_question(question: str, history: List[Message] = None, use_current_fa
         messages=messages,
     )
     return response.choices[0].message.content
+
 def reformulate_question(question: str) -> str:
 
     reformulation_prompt = (
