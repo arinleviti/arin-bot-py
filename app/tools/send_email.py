@@ -9,12 +9,11 @@ independently from "does the model decide to call this correctly."
 import os
 import resend
 from dotenv import load_dotenv
-#loads env file
+
 load_dotenv()
 
 # Resend's Python SDK works by setting this module-level attribute once,
 # rather than creating a client object like Groq's `Groq(api_key=...)`.
-# os.environ lets Python access environment variables
 resend.api_key = os.environ["RESEND_API_KEY"]
 
 # The address that receives the notification — you, the site owner.
@@ -28,18 +27,28 @@ def notify_arin(visitor_message: str, visitor_contact: str = None) -> bool:
     Sends Arin an email about a visitor's hiring interest / contact request.
 
     visitor_message: what the visitor said (the chatbot message that triggered this)
-    visitor_contact: optional — an email/contact detail the visitor provided, if any
+    visitor_contact: an email/contact detail the visitor provided — REQUIRED in
+                      practice (see guard below), even though Python can't enforce
+                      that at the signature level here (see note below).
 
     Returns True if the email was sent successfully, False otherwise.
     We return a bool (rather than letting exceptions bubble up) because later,
     when this is called BY the LLM as a tool, we need a clean success/failure
     signal to hand back to the model — not a crashed request.
     """
-    contact_line = (
-        f"<p><strong>Contact info provided:</strong> {visitor_contact}</p>"
-        if visitor_contact
-        else "<p><em>No contact info was provided by the visitor.</em></p>"
-    )
+    # This is the REAL enforcement of "don't send without contact info" — not
+    # the function signature. The caller (answer.py) always passes
+    # visitor_contact as a keyword argument, even when its value is None
+    # (args.get("visitor_contact") returns None if the key is missing).
+    # Removing the "= None" default above wouldn't help: the argument is
+    # never actually OMITTED from the call, only its VALUE can be empty.
+    # So we check the value here instead — a real backstop in case the LLM
+    # ever ignores the prompt instructions and calls this without contact info.
+    if not visitor_contact:
+        print("[send_email] refused to send — no visitor contact info provided")
+        return False
+
+    contact_line = f"<p><strong>Contact info provided:</strong> {visitor_contact}</p>"
 
     try:
         resend.Emails.send({
@@ -63,10 +72,18 @@ def notify_arin(visitor_message: str, visitor_contact: str = None) -> bool:
 
 
 if __name__ == "__main__":
-    # Manual test — run "python -m app_tools.send_email" (or wherever this
-    # ends up living in your project) and check your inbox.
+    # Manual test — run "python -m app.tools.send_email" (adjust the module
+    # path to match your project) and check your inbox.
+    print("Test 1: with contact info (should send)")
     success = notify_arin(
         visitor_message="Hi, I saw your portfolio and I'm very interested in hiring you!",
         visitor_contact="recruiter@example.com",
+    )
+    print(f"Email sent: {success}\n")
+
+    print("Test 2: without contact info (should be refused, no email)")
+    success = notify_arin(
+        visitor_message="I'd like to talk to Arin sometime.",
+        visitor_contact=None,
     )
     print(f"Email sent: {success}")

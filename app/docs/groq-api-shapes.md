@@ -17,7 +17,7 @@ response = groq_client.chat.completions.create(...)
                         "type": "function",
                         "function": {
                             "name": "notify_arin",
-                            "arguments": '{"visitor_message": "wants to hire Arin"}'
+                            "arguments": '{"visitor_message": "wants to hire Arin", "visitor_contact": "jane@company.com"}'
                         }
                     }
                 ]
