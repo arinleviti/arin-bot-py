@@ -18,8 +18,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 # BaseMOdel is a class from the Pydantic library, equivalent of a TS interface, except it also validates incoming data at runtime.
 #this Pydantic version actually checks at runtime that incoming JSON has a message field that's genuinely a string
-from app.rag.answer import answer_question
+from app.rag.answer import question_main_logic
 from typing import Dict, List
+from app.rag.rate_limit import check_rate_limit
 #creates the application object. Direct equivalent of const app = express().
 app= FastAPI()
 
@@ -45,13 +46,14 @@ def health_check():
 
 @app.post("/chat")
 def chat(request: ChatRequest):
+    check_rate_limit(request.sessionId) 
     #TS equivalent would be:
     #const history = conversations[request.sessionId] || [];
     # get is a safe lookup. If the sessionId doesn't exist in conversations, it returns the default value (an empty list) instead of throwing an error. This is similar to using the nullish coalescing operator (??) in TypeScript.
     # get only works with dictionaries.
     history: List[Message] = conversations.get(request.sessionId, [])
 
-    answer_text = answer_question(request.message, history)
+    answer_text = question_main_logic(request.message, history)
 
     # Now constructing real Message objects instead of plain dicts, to match the List[Message] type above.
     history.append(Message(role="user", content=request.message))
