@@ -192,8 +192,12 @@ def answer_question(
     "treat it exactly like an absent topic under the rules below — never improvise an "
     "answer from outside knowledge.\n\n"
     + fallback_instruction +
-    "Keep answers focused and skimmable — aim for 4 sentences maximum."
-    "Only go longer if the visitor explicitly asks for more detail.\n\n"
+    "Keep answers focused and skimmable — aim for 4 sentences maximum. "
+    "Only go longer if the visitor explicitly asks for more detail. "
+    "Be concrete, not generic: when the context names specific projects, tools, "
+    "frameworks, or results relevant to the question, mention them by name "
+    "(e.g. which project used it and what it did there) instead of summarising "
+    "them as a vague skill. Prefer two specific examples over a general statement.\n\n"
     + tool_contact_instruction +
     f"Context:\n{context_text}"
     )
