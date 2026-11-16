@@ -34,8 +34,7 @@ Arin has worked with Anthropic Claude (Claude Haiku 5.5 via the Anthropic SDK), 
 Arin has experience with Python and FastAPI. This chatbot, the Hotel Automation Agent and the Flight Disruption Assistant all have Python FastAPI backends; the hotel agent streams each step to the browser with Server-Sent Events. He uses Pydantic, uv and pytest.
 
 ## Docker, Google Cloud Run and Deployment
-Arin has experience with Docker and cloud deployment. This chatbot, the Hotel Automation Agent and the Flight Disruption Assistant all run as Docker containers on Google Cloud Run, with continuous deployment from GitHub or Google Cloud Build for the demos. Separately, without Docker, he hosts frontends on Netlify and his portfolio's C# backend on Azure App Service.
-
+Arin has experience with Docker and cloud deployment. This chatbot, the Hotel Automation Agent and the Flight Disruption Assistant all run as Docker containers on Google Cloud Run, with continuous deployment from GitHub or Google Cloud Build for the demos.
 ## PostgreSQL and SQL
 Arin has experience with PostgreSQL and SQL: Supabase and Prisma in Retro Horror Hub, Neon serverless Postgres with pgvector in the Hotel Automation Agent, and SQLite with an SQL self-join to build connecting flights in the Flight Disruption Assistant.
 
